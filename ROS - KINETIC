@@ -1,0 +1,99 @@
+
+
+#!/usr/bin/env python
+# Import required modules
+import rospy
+import moveit_commander
+from moveit_msgs.msg import GripperTranslation
+rospy.init_node(’turtlebot_pick_place’)
+
+# Create MoveGroupCommander instances for the arm and gripper
+
+arm = moveit_commander.MoveGroupCommander(’arm’)
+gripper = moveit_commander.MoveGroupCommander(’gripper’)
+
+# Open gripper
+
+gripper.set_joint_value_target({’gripper’: 0.005})
+gripper.go()
+
+# Pick variables
+
+pick_joint_values = {’joint1’: -0.518, ’joint2’: 1.130, ’joint3’: -0.761,
+’joint4’: 1.095}
+pick_cartesian_pose = [0.140, -0.126, 0.036, 0, 0, 0, 1]
+pick_gripper_value = -0.007
+pick_gripper_target = {’gripper’: pick_gripper_value}
+
+# New intermediate pose
+
+intermed_joint_values = {’joint1’: -0.518, ’joint2’: 0.800, ’joint3’: -0.761,
+’joint4’: 1.095}
+intermed_cartesian_pose = [0.140, -0.126, 0.036, 0, 0, 0, 1]
+intermed_gripper_target = {’gripper’: pick_gripper_value }
+
+# Place variables
+
+place_joint_values = {’joint1’: -1.718, ’joint2’: 1.130, ’joint3’: -0.761,
+’joint4’: 1.095}
+place_cartesian_pose = [-0.118, -0.249, 0.033, 0, 0, 0, 1]
+place_gripper_value = 0.007
+place_gripper_target = {’gripper’: place_gripper_value}
+
+# Second intermediate pose
+
+intermed2_joint_values = {’joint1’: -1.718, ’joint2’: 0.990, ’joint3’: -
+0.761,
+’joint4’: 1.095}
+intermed2_cartesian_pose = [0.140, -0.126, 0.036, 0, 0, 0, 1]
+intermed2_gripper_target = {’gripper’: place_gripper_value}
+
+# Move to home position
+
+arm.set_named_target(’home’)
+arm.go()
+
+# Pick object
+
+arm.set_joint_value_target(pick_joint_values)
+arm.go()
+arm.set_pose_target(pick_cartesian_pose)
+arm.go()
+rospy.sleep(1)
+gripper.set_joint_value_target(pick_gripper_target)
+gripper.go()
+
+# Intermediate position after pick
+
+arm.set_joint_value_target(intermed_joint_values)
+arm.go()
+arm.set_pose_target(intermed_cartesian_pose)
+arm.go()
+rospy.sleep(1)
+gripper.set_joint_value_target(intermed_gripper_target)
+gripper.go()
+
+# Place object
+
+arm.set_joint_value_target(place_joint_values)
+arm.go()
+arm.set_pose_target(place_cartesian_pose)
+arm.go()
+rospy.sleep(1)
+gripper.set_joint_value_target(place_gripper_target)
+gripper.go()
+
+# Intermediate position after place
+
+arm.set_joint_value_target(intermed2_joint_values)
+arm.go()
+arm.set_pose_target(intermed2_cartesian_pose)
+arm.go()
+gripper.set_joint_value_target(intermed2_gripper_target)
+gripper.go()
+
+# Return home
+
+arm.set_named_target(’home’)
+arm.go()
+print("Sequence complete!")
